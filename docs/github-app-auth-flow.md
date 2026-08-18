@@ -4,6 +4,15 @@ How the agent goes from a user clicking "Connect GitHub" to opening pull
 requests inside an isolated sandbox — five phases, one short-lived credential
 at a time.
 
+## Scope
+
+This doc covers GitHub credential handling and repo access only: installing
+the app, minting tokens, and getting code in and out of the sandbox via git.
+It does not cover Agent Swarm, which drives the sandbox at runtime once the
+repo is checked out, or the DB. See
+[system-communication-protocols.md](system-communication-protocols.md) for
+how this fits into the full system.
+
 ## Overview
 
 The design keeps three kinds of credential separate, each scoped as tightly
@@ -28,9 +37,12 @@ sandbox's viewer surfaces).
 - **BE** — backend: owns the GitHub App private key, mints JWTs and
   installation tokens, persists account state
 - **GH** — GitHub (OAuth, REST API, webhooks)
-- **PX** — Credential Proxy: the only component that holds a live
-  installation token; performs `git clone`/`git push` against GitHub on
-  behalf of the sandbox
+- **PX** — Credential Proxy: a Backend-owned Express service, not a
+  standalone box on the system diagram. It's the only component that holds a
+  live installation token, performs `git clone`/`git push` against GitHub on
+  behalf of the sandbox, and manages the sandbox's lifecycle via the E2B SDK.
+  Backend talks to PX over HTTP for all of this — see
+  [system-communication-protocols.md](system-communication-protocols.md)
 - **VM** — the sandbox where the agent actually edits code
 
 ## The five phases
