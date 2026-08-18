@@ -1,6 +1,18 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "GITHUB_APP_ID",
+    "GITHUB_APP_CLIENT_ID",
+    "GITHUB_APP_CLIENT_SECRET",
+    "GITHUB_APP_PRIVATE_KEY",
+    "GITHUB_APP_PRIVATE_KEY_PATH",
+    "GITHUB_APP_SLUG",
+    "WEB_APP_URL",
+    "PORT",
+    "NEXT_PUBLIC_GITHUB_APP_SLUG",
+    "NEXT_PUBLIC_API_URL"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
