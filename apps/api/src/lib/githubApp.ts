@@ -16,20 +16,31 @@ export function createAppJwt(): string {
   );
 }
 
-async function githubAppRequest(path: string, init?: RequestInit): Promise<Response> {
+function githubHeaders(token: string): HeadersInit {
+  return {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+}
+
+async function githubRequest(
+  token: string,
+  path: string,
+  init?: RequestInit,
+): Promise<Response> {
   const response = await fetch(`${GITHUB_API}${path}`, {
     ...init,
-    headers: {
-      Authorization: `Bearer ${createAppJwt()}`,
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-      ...init?.headers,
-    },
+    headers: { ...githubHeaders(token), ...init?.headers },
   });
   if (!response.ok) {
     throw new Error(`GitHub API ${path} failed: ${response.status} ${await response.text()}`);
   }
   return response;
+}
+
+function githubAppRequest(path: string, init?: RequestInit): Promise<Response> {
+  return githubRequest(createAppJwt(), path, init);
 }
 
 export async function getInstallationAccessToken(installationId: string): Promise<string> {
@@ -44,6 +55,33 @@ export async function getInstallationAccount(installationId: string): Promise<st
   const response = await githubAppRequest(`/app/installations/${installationId}`);
   const data = (await response.json()) as { account: { login: string } };
   return data.account.login;
+}
+
+export interface InstallationRepository {
+  id: number;
+  full_name: string;
+  private: boolean;
+}
+
+const REPOS_PER_PAGE = 100;
+
+export async function listInstallationRepositories(
+  installationId: string,
+): Promise<InstallationRepository[]> {
+  const token = await getInstallationAccessToken(installationId);
+  const repositories: InstallationRepository[] = [];
+
+  for (let page = 1; ; page++) {
+    const response = await githubRequest(
+      token,
+      `/installation/repositories?per_page=${REPOS_PER_PAGE}&page=${page}`,
+    );
+    const data = (await response.json()) as { repositories: InstallationRepository[] };
+    repositories.push(...data.repositories);
+    if (data.repositories.length < REPOS_PER_PAGE) break;
+  }
+
+  return repositories;
 }
 
 export async function exchangeUserCode(code: string): Promise<string> {

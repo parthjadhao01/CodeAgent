@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { consumeStoredState, setStoredConnection } from "../../../lib/github";
+import { API_URL, consumeStoredState, setStoredConnection } from "../../../lib/github";
 
 type Status = "verifying" | "connecting" | "error";
 
@@ -12,8 +12,12 @@ function GithubCallbackContent() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<Status>("verifying");
   const [error, setError] = useState<string | null>(null);
+  const ran = useRef(false);
 
   useEffect(() => {
+    if (ran.current) return;
+    ran.current = true;
+
     const code = searchParams.get("code");
     const installationId = searchParams.get("installation_id");
     const setupAction = searchParams.get("setup_action");
@@ -34,7 +38,7 @@ function GithubCallbackContent() {
 
     setStatus("connecting");
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/github/callback`, {
+    fetch(`${API_URL}/api/github/callback`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code, installationId, setupAction }),

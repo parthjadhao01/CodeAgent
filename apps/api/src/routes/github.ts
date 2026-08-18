@@ -1,5 +1,9 @@
 import { Router, type Router as RouterType } from "express";
-import { exchangeUserCode, getInstallationAccount } from "../lib/githubApp.js";
+import {
+  exchangeUserCode,
+  getInstallationAccount,
+  listInstallationRepositories,
+} from "../lib/githubApp.js";
 import { saveInstallation } from "../lib/store.js";
 
 export const githubRouter: RouterType = Router();
@@ -35,6 +39,22 @@ githubRouter.post("/callback", async (req, res) => {
     });
 
     res.json({ installationId, accountLogin });
+  } catch (error) {
+    res.status(502).json({ error: error instanceof Error ? error.message : "Unknown error" });
+  }
+});
+
+githubRouter.get("/repos", async (req, res) => {
+  const { installationId } = req.query;
+
+  if (typeof installationId !== "string") {
+    res.status(400).json({ error: "installationId is required" });
+    return;
+  }
+
+  try {
+    const repositories = await listInstallationRepositories(installationId);
+    res.json({ repositories });
   } catch (error) {
     res.status(502).json({ error: error instanceof Error ? error.message : "Unknown error" });
   }

@@ -4,17 +4,30 @@ import { useEffect, useState } from "react";
 import {
   clearStoredConnection,
   getStoredConnection,
+  listRepositories,
   startGithubConnect,
   type GithubConnection,
+  type GithubRepository,
 } from "../lib/github";
 
 export default function Page() {
   const [connection, setConnection] = useState<GithubConnection | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [repos, setRepos] = useState<GithubRepository[] | null>(null);
+  const [reposError, setReposError] = useState<string | null>(null);
 
   useEffect(() => {
-    setConnection(getStoredConnection());
+    const stored = getStoredConnection();
+    setConnection(stored);
     setLoaded(true);
+
+    if (stored) {
+      listRepositories(stored.installationId)
+        .then(setRepos)
+        .catch((error: unknown) => {
+          setReposError(error instanceof Error ? error.message : "Failed to list repositories.");
+        });
+    }
   }, []);
 
   if (!loaded) {
@@ -49,6 +62,17 @@ export default function Page() {
           >
             Disconnect
           </button>
+          {reposError ? (
+            <p className="text-sm text-red-500">{reposError}</p>
+          ) : (
+            <ul className="text-sm text-neutral-500">
+              {repos === null
+                ? "Loading repositories…"
+                : repos.length === 0
+                  ? "No repositories found."
+                  : repos.map((repo) => <li key={repo.id}>{repo.full_name}</li>)}
+            </ul>
+          )}
         </>
       ) : (
         <button

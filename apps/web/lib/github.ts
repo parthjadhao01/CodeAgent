@@ -1,9 +1,27 @@
 const STATE_STORAGE_KEY = "github_oauth_state";
 const CONNECTED_STORAGE_KEY = "github_connection";
 
+export const API_URL = "http://localhost:3002"
+
 export interface GithubConnection {
   installationId: string;
   accountLogin: string;
+}
+
+export interface GithubRepository {
+  id: number;
+  full_name: string;
+  private: boolean;
+}
+
+export async function listRepositories(installationId: string): Promise<GithubRepository[]> {
+  const response = await fetch(`${API_URL}/api/github/repos?installationId=${installationId}`);
+  if (!response.ok) {
+    const body = (await response.json()) as { error?: string };
+    throw new Error(body.error ?? `Failed to list repositories: ${response.status}`);
+  }
+  const data = (await response.json()) as { repositories: GithubRepository[] };
+  return data.repositories;
 }
 
 export function generateState(): string {
