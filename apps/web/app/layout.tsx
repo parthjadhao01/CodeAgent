@@ -5,7 +5,8 @@ import { GeistSans } from "geist/font/sans";
 
 export const metadata: Metadata = {
   title: "Code Agent",
-  description: "Connect your GitHub repositories to the code agent.",
+  description:
+    "An autonomous engineer that lives in your GitHub repo — plans, edits, tests, and opens pull requests inside its own isolated sandbox.",
 };
 
 export default function RootLayout({
@@ -14,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark" style={{ colorScheme: "dark" }}>
       <body className={GeistSans.className}>{children}</body>
     </html>
   );
