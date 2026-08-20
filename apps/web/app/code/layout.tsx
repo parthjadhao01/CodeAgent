@@ -1,27 +1,51 @@
 "use client"
-import { SidebarInset, SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar"
+import { useRouter } from "next/navigation"
+import { LogOut } from "lucide-react"
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button"
 
 function SidebarHeaderBar() {
-    const {open} = useSidebar()
+    const router = useRouter()
+
     return (
-        <>
-            {!open ? (
-                <SidebarTrigger className="ml-5 mt-3"></SidebarTrigger>
-            ) : (
-                <div className="ml-5 mt-3 h-7"></div>
-            )}
-        </>
+        <header className="flex h-(--header-height) shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
+            <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
+                <SidebarTrigger className="-ml-1" />
+                <Separator
+                    orientation="vertical"
+                    className="mx-2 data-[orientation=vertical]:h-4"
+                />
+                <h1 className="text-base font-medium">Refactoring code</h1>
+                <div className="ml-auto flex items-center gap-2">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="hidden dark:text-foreground sm:flex"
+                        onClick={() => router.push("/")}
+                    >
+                        <LogOut />
+                        Logout
+                    </Button>
+                </div>
+            </div>
+        </header>
     )
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-   
+
     return (
-        <SidebarProvider>
+        <SidebarProvider
+            style={
+                {
+                    "--header-height": "calc(var(--spacing) * 12)",
+                } as React.CSSProperties
+            }
+        >
             <AppSidebar />
-            <SidebarInset className="">
+            <SidebarInset>
                 <SidebarHeaderBar />
                 <main className="h-[calc(100svh-4rem)] overflow-hidden">
                     {children}

@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { Separator } from "@/components/ui/separator"
 
 // Types
 export interface FileWithPreview {
@@ -693,7 +694,8 @@ function AIPromptBar({
         !files.some((f) => f.uploadStatus === "uploading")
 
     return (
-        <div className="border-t p-3">
+        <div className="p-3">
+            <Separator  orientation="horizontal" className="mb-3"/>
             <div
                 className="relative flex flex-col gap-2 rounded-2xl border bg-background p-2"
                 onDragOver={handleDragOver}
@@ -758,8 +760,8 @@ function AIPromptBar({
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 shrink-0"
-                            disabled={disabled}
-                            title="Options (not implemented)"
+                            disabled
+                            title="Options (coming soon)"
                         >
                             <SlidersHorizontal className="h-4 w-4" />
                         </Button>

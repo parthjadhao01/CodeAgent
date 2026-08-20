@@ -29,7 +29,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { isMobile } = useSidebar()
 
     return (
-        <Sidebar variant="floating" {...props}>
+        <Sidebar variant="inset" {...props}>
             <SidebarHeader>
                 <div className="flex items-center justify-between gap-2 px-2 py-1.5">
                     <div className="flex items-center gap-2">
@@ -38,7 +38,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         </Avatar>
                         <span className="text-sm font-medium">parthjadhao4gmail.com</span>
                     </div>
-                    <SidebarTrigger />
                 </div>
                 <SidebarMenu>
                     <SidebarMenuItem>
@@ -94,8 +93,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroup>
-                <SidebarGroup>
+                <SidebarGroup className="group-data-[collapsible=icon]:hidden">
                     <SidebarGroupLabel>Favorites</SidebarGroupLabel>
+                    <p className="px-2 text-xs text-muted-foreground">
+                        No favorites yet
+                    </p>
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>
@@ -109,7 +111,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarMenuItem>
                         <SidebarMenuButton>
                                 <Settings></Settings>
-                                <span>Setting</span>
+                                <span>Settings</span>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
