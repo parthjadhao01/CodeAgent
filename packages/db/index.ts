@@ -4,25 +4,27 @@ const UserSchema = new Schema({
     _id : {
         type : String,
         required : true,
-        unique : true
+        unique : true,
+        default : () => crypto.randomUUID()
     },
     email : {
         type : String,
         required : true,
     },
-    conversationId : [{
+    password : {
         type : String,
-        ref : "Conversation"
-    }],
-    githubCredentialId : [{
-         type : String,
-         ref : "GitHubCredential"
-    }]
+    }
 })
 
 const ConversationSchema = new Schema({
     _id : {
         type : String,
+        required : true,
+        default : () => crypto.randomUUID()
+    },
+    userId : {
+        type : String,
+        ref : "User",
         required : true
     },
     name : {
@@ -34,23 +36,21 @@ const ConversationSchema = new Schema({
     },
     active : {
         type : Boolean,
-        required : true
+        default : false
     },
     isFavorite : {
         type : Boolean,
         default : false
     },
-    chatResponse : [{
-        type : String,
-        ref : "ChatResponse"
-    }],
     repoUrl : {
         type : String,
         required : true
     },
-    userId : {
+    prUrl : {
         type : String,
-        ref : "GitHubCredential"
+    },
+    prNumber : {
+        type : String,
     }
 },{
     timestamps : true
@@ -59,6 +59,12 @@ const ConversationSchema = new Schema({
 const GitHubCredentialSchema = new Schema({
     _id : {
         type : String,
+        required : true,
+        default : () => crypto.randomUUID()
+    },
+    userId : {
+        type : String,
+        ref : "User",
         required : true
     },
     installationId : {
@@ -71,13 +77,11 @@ const GitHubCredentialSchema = new Schema({
     },
     connectedAt : {
         type : String,
-    },
-    userId : {
-        type : String,
+        default : () => new Date().toISOString()
     }
 })
 
-const toolcallSchema = new Schema({
+const toolCallSchema = new Schema({
     name : {
         type : String
     },
@@ -93,44 +97,31 @@ const toolcallSchema = new Schema({
     }
 })
 
-const promptSchema = new Schema({
-    _id : {
-        type : String
-    },
-    prompt : {
-        type : String
-    }
-})
-
-const responseSchema = new Schema({
-    _id : {
-        type : String
-    },
-    response : {
-        type : String
-    },
-    toolCalls : [toolcallSchema]
-})
-
-const ClientAIConversationSchema = new Schema({
-    prompt : [promptSchema],
-    response : [responseSchema]
-})
-
 const ChatResponseSchema = new Schema({
     _id : {
         type : String,
-        required : true
+        required : true,
+        default : () => crypto.randomUUID()
     },
     conversationId : {
         type : String,
-        ref : "Conversation"
+        ref : "Conversation",
+        required : true
     },
-    conversation : ClientAIConversationSchema
-    
+    prompt : {
+        type : String,
+        required : true
+    },
+    response : {
+        type : String,
+        required : true
+    },
+    toolCalls : [toolCallSchema]
+},{
+    timestamps : true
 })
 
 export const UserModel = mongoose.model("User",UserSchema)
 export const ConversationModel = mongoose.model("Conversation",ConversationSchema)
 export const GitHubCredentialModel = mongoose.model("GitHubCredential",GitHubCredentialSchema)
-export const ChatResponse = mongoose.model("ChatResponse",ChatResponseSchema)
+export const ChatResponseModel = mongoose.model("ChatResponse",ChatResponseSchema)

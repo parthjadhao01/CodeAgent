@@ -1,7 +1,9 @@
 # Data Model
 
 The four collections behind auth, GitHub connections, and chat: `User`,
-`GithubCredential`, `Conversation`, `ChatResponse`.
+`GitHubCredential`, `Conversation`, `ChatResponse`.
+
+Implemented in [packages/db/index.ts](../packages/db/index.ts) (Mongoose).
 
 ## Scope
 
@@ -16,7 +18,7 @@ provisioned per conversation (see
 
 ```mermaid
 erDiagram
-    User ||--o{ GithubCredential : "connects"
+    User ||--o{ GitHubCredential : "connects"
     User ||--o{ Conversation : "owns"
     Conversation ||--o{ ChatResponse : "contains"
 
@@ -25,7 +27,7 @@ erDiagram
         string email
         string password
     }
-    GithubCredential {
+    GitHubCredential {
         string _id
         string userId
         string installationId
@@ -68,9 +70,9 @@ dropped.
 |---|---|---|
 | `_id` | string | |
 | `email` | string | |
-| `password` | string | Bcrypt hash, never plaintext. Only set when the account was created via email/password signup — a user who only ever signs in through the GitHub App install flow ([github-app-auth-flow.md](github-app-auth-flow.md) Phase 1) may not have one. Independent of `GithubCredential`: this field identifies the app account, not a GitHub identity. |
+| `password` | string | Bcrypt hash, never plaintext. Only set when the account was created via email/password signup — a user who only ever signs in through the GitHub App install flow ([github-app-auth-flow.md](github-app-auth-flow.md) Phase 1) may not have one. Independent of `GitHubCredential`: this field identifies the app account, not a GitHub identity. |
 
-### GithubCredential
+### GitHubCredential
 
 One row per GitHub App installation a user has connected. A user can connect
 more than one (personal account + one or more orgs), so this is its own
@@ -119,7 +121,7 @@ One row per prompt/response turn.
 | `prompt` | string | |
 | `response` | string | |
 | `createdAt` | Date | |
-| `toolCalls` | `{ name: string, input: object, output: string, status: string }[]` | Structured, not flat strings — needed to render what a tool actually did (matches the Agent Swarm ↔ Sandbox exec calls in [system-communication-protocols.md](system-communication-protocols.md)) |
+| `toolCalls` | `{ name: string, input: string, output: string, status: "inProgress" \| "Successful" \| "Failed" }[]` | Structured, not flat strings — needed to render what a tool actually did (matches the Agent Swarm ↔ Sandbox exec calls in [system-communication-protocols.md](system-communication-protocols.md)) |
 
 ## Naming conventions
 
@@ -130,19 +132,22 @@ One row per prompt/response turn.
 - Fields are camelCase throughout, including `toolCalls` (fixes an earlier
   `tools-call`).
 
+## Resolved
+
+- **Redundant id-arrays.** An earlier draft kept id-arrays on the parent
+  (`User.conversationsId`, `Conversation.chatResponse`,
+  `User.githubCredential`) alongside the FKs. Dropped — `packages/db/index.ts`
+  now only carries the child-side FK (`Conversation.userId`,
+  `GitHubCredential.userId`, `ChatResponse.conversationId`); look up children
+  by querying on that FK instead of walking an array.
+
 ## Open questions
 
-- **Redundant id-arrays.** An earlier draft of this schema kept id-arrays on
-  the parent (`User.conversationsId`, `Conversation.chatResponse`,
-  `User.githubCredential`) alongside the FKs documented above. Both
-  directions doubles the writes needed to stay consistent, so this doc
-  assumes the arrays are dropped in favor of querying by FK — confirm before
-  implementing.
 - **User's GitHub OAuth access token.** Phase 1 of the auth flow has the
   backend persist `installation_id + user access_token` against the account
   record, and the current `apps/api/src/lib/store.ts` does this today
-  (`userAccessToken`). Neither `User` nor `GithubCredential` above has a
+  (`userAccessToken`). Neither `User` nor `GitHubCredential` above has a
   field for it. If nothing downstream needs to call the GitHub API *as the
   user* (vs. as the installation), this can stay dropped; otherwise it needs
-  a home — likely on `GithubCredential`, scoped per installation rather than
+  a home — likely on `GitHubCredential`, scoped per installation rather than
   per user.
