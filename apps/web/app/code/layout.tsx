@@ -5,9 +5,16 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
+import { clearStoredConnection } from "@/lib/github"
 
 function SidebarHeaderBar() {
     const router = useRouter()
+
+    const handleLogout = async () => {
+        await fetch("/api/session", { method: "DELETE" })
+        clearStoredConnection()
+        router.push("/")
+    }
 
     return (
         <header className="flex h-(--header-height) shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
@@ -23,7 +30,7 @@ function SidebarHeaderBar() {
                         variant="ghost"
                         size="sm"
                         className="hidden dark:text-foreground sm:flex"
-                        onClick={() => router.push("/")}
+                        onClick={handleLogout}
                     >
                         <LogOut />
                         Logout

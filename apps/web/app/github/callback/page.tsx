@@ -48,11 +48,23 @@ function GithubCallbackContent() {
           const body = (await response.json()) as { error?: string };
           throw new Error(body.error ?? `Request failed: ${response.status}`);
         }
-        return response.json() as Promise<{ installationId: string; accountLogin: string }>;
+        return response.json() as Promise<{
+          installationId: string;
+          accountLogin: string;
+          sessionToken: string;
+        }>;
       })
-      .then((data) => {
-        setStoredConnection(data);
-        router.replace("/");
+      .then(async (data) => {
+        const sessionResponse = await fetch("/api/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionToken: data.sessionToken }),
+        });
+        if (!sessionResponse.ok) {
+          throw new Error("Failed to establish session.");
+        }
+        setStoredConnection({ installationId: data.installationId, accountLogin: data.accountLogin });
+        router.replace("/code");
       })
       .catch((err: unknown) => {
         setStatus("error");

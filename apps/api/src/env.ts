@@ -22,6 +22,7 @@ export const env = {
   githubAppClientSecret: required("GITHUB_APP_CLIENT_SECRET"),
   githubAppPrivateKey: loadPrivateKey(),
   githubAppSlug: required("GITHUB_APP_SLUG"),
+  sessionSecret: required("SESSION_SECRET"),
   webAppUrl: process.env.WEB_APP_URL ?? "http://localhost:3001",
   port: Number(process.env.PORT ?? 3002),
 };

@@ -9,6 +9,7 @@ interface HeroProps {
   subtitle: string
   ctaLabel?: string
   ctaHref?: string
+  onCtaClick?: () => void
 }
 
 export function Hero({
@@ -17,6 +18,7 @@ export function Hero({
   subtitle,
   ctaLabel = "Explore Now",
   ctaHref = "#",
+  onCtaClick,
 }: HeroProps) {
   return (
     <section
@@ -84,12 +86,21 @@ export function Hero({
       {/* CTA */}
       {ctaLabel && (
         <div className="flex justify-center">
-          <Button
-            asChild
-            className="mt-[-20px] w-fit md:w-52 z-20 font-geist tracking-tighter text-center text-lg"
-          >
-            <a href={ctaHref}>{ctaLabel}</a>
-          </Button>
+          {onCtaClick ? (
+            <Button
+              onClick={onCtaClick}
+              className="mt-[-20px] w-fit md:w-52 z-20 font-geist tracking-tighter text-center text-lg"
+            >
+              {ctaLabel}
+            </Button>
+          ) : (
+            <Button
+              asChild
+              className="mt-[-20px] w-fit md:w-52 z-20 font-geist tracking-tighter text-center text-lg"
+            >
+              <a href={ctaHref}>{ctaLabel}</a>
+            </Button>
+          )}
         </div>
       )}
 

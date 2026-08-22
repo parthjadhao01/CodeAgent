@@ -4,6 +4,7 @@ import {
   getInstallationAccount,
   listInstallationRepositories,
 } from "../lib/githubApp.js";
+import { createSessionToken } from "../lib/session.js";
 import { saveInstallation } from "../lib/store.js";
 
 export const githubRouter: RouterType = Router();
@@ -38,7 +39,9 @@ githubRouter.post("/callback", async (req, res) => {
       connectedAt: new Date().toISOString(),
     });
 
-    res.json({ installationId, accountLogin });
+    const sessionToken = createSessionToken({ installationId, accountLogin });
+
+    res.json({ installationId, accountLogin, sessionToken });
   } catch (error) {
     res.status(502).json({ error: error instanceof Error ? error.message : "Unknown error" });
   }
