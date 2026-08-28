@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE } from "@/lib/session";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3002";
+import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
 
 function redirectHome(request: NextRequest): NextResponse {
   const url = request.nextUrl.clone();
@@ -9,6 +7,11 @@ function redirectHome(request: NextRequest): NextResponse {
   return NextResponse.redirect(url);
 }
 
+/**
+ * Guards the dashboard on *platform* auth (Google via NextAuth) only.
+ * Whether the user has connected a GitHub App installation is a separate
+ * concern, handled inside /code — not a condition for reaching it.
+ */
 export async function proxy(request: NextRequest) {
   const session = request.cookies.get(SESSION_COOKIE);
 
@@ -16,13 +19,9 @@ export async function proxy(request: NextRequest) {
     return redirectHome(request);
   }
 
-  const verifyResponse = await fetch(`${API_URL}/api/session/verify`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: session.value }),
-  }).catch(() => null);
+  const payload = await verifySessionToken(session.value);
 
-  if (!verifyResponse || !verifyResponse.ok) {
+  if (!payload) {
     const response = redirectHome(request);
     response.cookies.delete(SESSION_COOKIE);
     return response;

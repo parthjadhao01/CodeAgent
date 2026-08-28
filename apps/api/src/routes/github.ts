@@ -4,12 +4,17 @@ import {
   getInstallationAccount,
   listInstallationRepositories,
 } from "../lib/githubApp.js";
-import { createSessionToken } from "../lib/session.js";
-import { saveInstallation } from "../lib/store.js";
+import { currentUser, requireUser } from "../lib/auth.js";
+import { saveInstallation, userOwnsInstallation } from "../lib/store.js";
 
 export const githubRouter: RouterType = Router();
 
+// Every route here is a repo *connection* on top of an existing platform
+// session — installing the GitHub App never signs anyone in.
+githubRouter.use(requireUser);
+
 githubRouter.post("/callback", async (req, res) => {
+  const user = currentUser(req);
   const { code, installationId, setupAction } = req.body as {
     code?: string;
     installationId?: string;
@@ -34,24 +39,29 @@ githubRouter.post("/callback", async (req, res) => {
 
     saveInstallation({
       installationId,
+      userId: user.userId,
       accountLogin,
       userAccessToken,
       connectedAt: new Date().toISOString(),
     });
 
-    const sessionToken = createSessionToken({ installationId, accountLogin });
-
-    res.json({ installationId, accountLogin, sessionToken });
+    res.json({ installationId, accountLogin });
   } catch (error) {
     res.status(502).json({ error: error instanceof Error ? error.message : "Unknown error" });
   }
 });
 
 githubRouter.get("/repos", async (req, res) => {
+  const user = currentUser(req);
   const { installationId } = req.query;
 
   if (typeof installationId !== "string") {
     res.status(400).json({ error: "installationId is required" });
+    return;
+  }
+
+  if (!userOwnsInstallation(user.userId, installationId)) {
+    res.status(403).json({ error: "That installation is not connected to your account" });
     return;
   }
 

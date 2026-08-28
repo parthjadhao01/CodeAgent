@@ -6,7 +6,9 @@ import { sessionRouter } from "./routes/session.js";
 
 const app = express();
 
-app.use(cors({ origin: env.webAppUrl }));
+// credentials: the browser must send the platform session cookie with
+// cross-origin calls from the web app.
+app.use(cors({ origin: env.webAppUrl, credentials: true }));
 app.use(express.json());
 
 app.use("/api/github", githubRouter);

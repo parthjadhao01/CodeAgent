@@ -1,7 +1,7 @@
 const STATE_STORAGE_KEY = "github_oauth_state";
 const CONNECTED_STORAGE_KEY = "github_connection";
 
-export const API_URL = "http://localhost:3002"
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3002";
 
 export interface GithubConnection {
   installationId: string;
@@ -15,7 +15,11 @@ export interface GithubRepository {
 }
 
 export async function listRepositories(installationId: string): Promise<GithubRepository[]> {
-  const response = await fetch(`${API_URL}/api/github/repos?installationId=${installationId}`);
+  const response = await fetch(`${API_URL}/api/github/repos?installationId=${installationId}`, {
+    // Sends the platform session cookie so the API can check this
+    // installation belongs to the signed-in user.
+    credentials: "include",
+  });
   if (!response.ok) {
     const body = (await response.json()) as { error?: string };
     throw new Error(body.error ?? `Failed to list repositories: ${response.status}`);

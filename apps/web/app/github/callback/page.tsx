@@ -38,8 +38,12 @@ function GithubCallbackContent() {
 
     setStatus("connecting");
 
+    // This attaches an installation to the already-signed-in platform user;
+    // it does not create or replace the session. The platform session cookie
+    // rides along so the API knows which user to file the credential under.
     fetch(`${API_URL}/api/github/callback`, {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code, installationId, setupAction }),
     })
@@ -51,19 +55,13 @@ function GithubCallbackContent() {
         return response.json() as Promise<{
           installationId: string;
           accountLogin: string;
-          sessionToken: string;
         }>;
       })
-      .then(async (data) => {
-        const sessionResponse = await fetch("/api/session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionToken: data.sessionToken }),
+      .then((data) => {
+        setStoredConnection({
+          installationId: data.installationId,
+          accountLogin: data.accountLogin,
         });
-        if (!sessionResponse.ok) {
-          throw new Error("Failed to establish session.");
-        }
-        setStoredConnection({ installationId: data.installationId, accountLogin: data.accountLogin });
         router.replace("/code");
       })
       .catch((err: unknown) => {

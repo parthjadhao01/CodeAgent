@@ -2,6 +2,11 @@
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
   "globalEnv": [
+    "NODE_ENV",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "NEXTAUTH_URL",
+    "SESSION_SECRET",
     "GITHUB_APP_ID",
     "GITHUB_APP_CLIENT_ID",
     "GITHUB_APP_CLIENT_SECRET",

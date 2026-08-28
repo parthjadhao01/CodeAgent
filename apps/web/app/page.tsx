@@ -1,27 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Hero } from "@/components/ui/hero-1";
 import { Features } from "@/components/ui/features-6";
 import { MinimalFooter } from "@/components/ui/minimal-footer";
-import { getStoredConnection, startGithubConnect } from "@/lib/github";
+import { signIn, useSession } from "next-auth/react";
 
 export default function Page() {
   const router = useRouter();
-  const [connected, setConnected] = useState(false);
+  const { data: session, status } = useSession();
 
-  useEffect(() => {
-    setConnected(getStoredConnection() !== null);
-  }, []);
-
-  const handleConnect = () => {
-    if (connected) {
+  // Google is the only way in. Connecting a GitHub App installation happens
+  // later, from inside the dashboard, against this signed-in account.
+  const handleCta = () => {
+    if (session) {
       router.push("/code");
       return;
     }
-    startGithubConnect();
+    void signIn("google", { callbackUrl: "/code" });
   };
+
+  const signedIn = status === "authenticated";
 
   return (
     <main>
@@ -31,18 +30,18 @@ export default function Page() {
         </span>
         <button
           type="button"
-          onClick={handleConnect}
+          onClick={handleCta}
           className="text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          {connected ? "Dashboard" : "Sign in"}
+          {signedIn ? "Dashboard" : "Sign in"}
         </button>
       </header>
       <Hero
         eyebrow="Autonomous Coding Agent"
         title="Your AI engineer, shipping PRs"
         subtitle="Describe the task. Code Agent plans, edits, and tests it inside its own isolated sandbox — then opens a pull request for you to review."
-        ctaLabel={connected ? "Go to dashboard" : "Continue with GitHub"}
-        onCtaClick={handleConnect}
+        ctaLabel={signedIn ? "Go to dashboard" : "Continue with Google"}
+        onCtaClick={handleCta}
       />
       {/* Companies */}
       <Features />
