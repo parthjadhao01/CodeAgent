@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import { connect } from "@repo/db";
 import { env } from "./env.js";
 import { githubRouter } from "./routes/github.js";
 import { sessionRouter } from "./routes/session.js";
@@ -14,6 +15,15 @@ app.use(express.json());
 app.use("/api/github", githubRouter);
 app.use("/api/session", sessionRouter);
 
-app.listen(env.port, () => {
-  console.log(`api listening on http://localhost:${env.port}`);
+
+async function main(): Promise<void> {
+  await connect(env.mongoUrl);
+  app.listen(env.port, () => {
+    console.log(`api listening on http://localhost:${env.port}`);
+  });
+}
+
+main().catch((error) => {
+  console.error("api failed to start:", error);
+  process.exit(1);
 });

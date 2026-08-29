@@ -32,16 +32,15 @@ githubRouter.post("/callback", async (req, res) => {
   }
 
   try {
-    const [userAccessToken, accountLogin] = await Promise.all([
+    const [, accountLogin] = await Promise.all([
       exchangeUserCode(code),
       getInstallationAccount(installationId),
     ]);
 
-    saveInstallation({
+    await saveInstallation({
       installationId,
       userId: user.userId,
       accountLogin,
-      userAccessToken,
       connectedAt: new Date().toISOString(),
     });
 
@@ -60,7 +59,7 @@ githubRouter.get("/repos", async (req, res) => {
     return;
   }
 
-  if (!userOwnsInstallation(user.userId, installationId)) {
+  if (!(await userOwnsInstallation(user.userId, installationId))) {
     res.status(403).json({ error: "That installation is not connected to your account" });
     return;
   }

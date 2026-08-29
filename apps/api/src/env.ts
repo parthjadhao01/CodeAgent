@@ -23,6 +23,7 @@ export const env = {
   githubAppPrivateKey: loadPrivateKey(),
   githubAppSlug: required("GITHUB_APP_SLUG"),
   sessionSecret: required("SESSION_SECRET"),
+  mongoUrl: required("MONGO_URL"),
   webAppUrl: process.env.WEB_APP_URL ?? "http://localhost:3001",
   port: Number(process.env.PORT ?? 3002),
 };
